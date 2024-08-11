@@ -1,29 +1,16 @@
-import copy
 import json
 import logging
-import uuid
-import httpx
-import asyncio
-from quart import (
-    Blueprint,
-    Quart,
-    jsonify,
-    make_response,
-    request,
-    send_from_directory,
-    render_template,
-    current_app,
-)
+from flask import Flask, Blueprint, jsonify, request, send_from_directory, render_template
 
 bp = Blueprint("routes", __name__, static_folder="static", template_folder="static")
 
 def create_app():
-    app = Quart(__name__)
+    app = Flask(__name__, static_folder='static', template_folder='static')
     app.register_blueprint(bp)
     app.config["TEMPLATES_AUTO_RELOAD"] = True
 
-    @app.before_serving
-    async def init():
+    @app.before_first_request
+    def init():
         try:
             # Remove any database initialization code
             pass
@@ -34,22 +21,22 @@ def create_app():
     return app
 
 @bp.route("/")
-async def index():
-    return await render_template("index.html", title="Chatbot", favicon="favicon.ico")
+def index():
+    return render_template("index.html", title="Chatbot", favicon="favicon.ico")
 
 @bp.route("/favicon.ico")
-async def favicon():
-    return await bp.send_static_file("favicon.ico")
+def favicon():
+    return send_from_directory("static", "favicon.ico")
 
 @bp.route("/assets/<path:path>")
-async def assets(path):
-    return await send_from_directory("static/assets", path)
+def assets(path):
+    return send_from_directory("static/assets", path)
 
 @bp.route("/conversation", methods=["POST"])
-async def conversation():
+def conversation():
     if not request.is_json:
         return jsonify({"error": "request must be json"}), 415
-    request_json = await request.get_json()
+    request_json = request.get_json()
     # Process the request here
     return jsonify({"response": "Processed"})
 
@@ -76,3 +63,7 @@ def get_frontend_settings():
         return jsonify({"error": str(e)}), 500
 
 # Other routes and logic
+
+if __name__ == '__main__':
+    app = create_app()
+    app.run(debug=True)
