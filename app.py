@@ -66,7 +66,7 @@ def get_frontend_settings():
         logging.exception("Exception in /frontend_settings")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/chatbot/sendMessage', methods=['POST'])
+@bp.route('/api/chatbot/sendMessage', methods=['POST'])
 def send_message():
     data = request.get_json()
     message = data.get('message')
